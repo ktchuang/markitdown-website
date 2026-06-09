@@ -1,7 +1,7 @@
 {
-  "name": "MarkItDown — 文件轉 Markdown",
-  "short_name": "MarkItDown",
-  "description": "在瀏覽器中將文件轉換為 Markdown，所有處理完全在本機端進行",
+  "name": "WikiTA · 教材轉 Markdown",
+  "short_name": "WikiTA 匯入",
+  "description": "WikiTA 知識匯入工具：把教材文件轉成 Markdown，供匯入知識庫。檔案完全在本機端處理。",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1a1a1a",
@@ -31,13 +31,13 @@
       "sizes": "1280x800",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "MarkItDown — 文件轉 Markdown"
+      "label": "WikiTA · 教材轉 Markdown"
     },
     {
       "src": "/images/screenshot-mobile.png",
       "sizes": "390x844",
       "type": "image/png",
-      "label": "MarkItDown — 文件轉 Markdown"
+      "label": "WikiTA · 教材轉 Markdown"
     }
   ]
 }
