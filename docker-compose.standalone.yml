@@ -1,0 +1,29 @@
+# Standalone static deployment — this is what actually serves netdb.
+#
+# NOTE: this is NOT the full app. The `docker-compose.yml` next to this file runs
+# the published `gonetone/markitdown-website` image (nginx + Node URL-proxy) on
+# :8080. THIS file is the cut-down deployment that runs on this dev host: a plain
+# nginx serving the repo's static files (Pyodide does the conversion in-browser;
+# the /api/ URL-proxy is disabled — see nginx-standalone.conf). It is reached from
+# the outside via https://materialservices.netdb.csie.ncku.edu.tw/ reverse-proxied
+# to :8090, and backs the PI dashboard's 「教材轉 Markdown」 button.
+#
+# 2026-07-18: previously launched as a bare `docker run`, so it was in no compose
+# file — invisible to SBOM scanners and the first thing missed on every nginx CVE
+# (it was 1.31.2 while the two frontends were being patched). Captured here so it
+# upgrades and audits alongside them.
+#
+#   docker compose -f docker-compose.standalone.yml up -d
+services:
+  markitdown:
+    # Same nginx pin as the pi/stud frontends — patched together on nginx CVEs.
+    #   2026-07-13: 1.31.1 -> 1.31.2 (CVE-2026-42530 + CVE-2026-42055)
+    #   2026-07-18: 1.31.2 -> 1.31.3 (CVE-2026-42533, 8.1 HIGH / CVSSv4 9.2)
+    image: nginx:1.31.3-alpine
+    container_name: wikita-markitdown
+    restart: unless-stopped
+    ports:
+      - "8090:80"                # reverse-proxied from netdb (see header)
+    volumes:
+      - ./docker/nginx-standalone.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./:/usr/share/nginx/html:ro
