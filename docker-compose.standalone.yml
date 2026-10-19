@@ -19,7 +19,8 @@ services:
     # Same nginx pin as the pi/stud frontends — patched together on nginx CVEs.
     #   2026-07-13: 1.31.1 -> 1.31.2 (CVE-2026-42530 + CVE-2026-42055)
     #   2026-07-18: 1.31.2 -> 1.31.3 (CVE-2026-42533, 8.1 HIGH / CVSSv4 9.2)
-    image: nginx:1.31.3-alpine
+    #   2026-10-19: 1.31.3 -> 1.31.7 (CVE-2026-15176 + CVE-2026-93479, 8.1 HIGH / CVSSv4 9.2)
+    image: nginx:1.31.7-alpine
     container_name: wikita-markitdown
     restart: unless-stopped
     ports:
