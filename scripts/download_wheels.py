@@ -74,11 +74,29 @@ def download_file(url, dest_path):
     urllib.request.urlretrieve(url, dest_path, reporthook)
     print()  # 換行
 
+def installed_pyodide_version():
+    """回傳 pyodide/ 內現有 runtime 的版本；讀不到時回傳 None。"""
+    try:
+        return json.loads((PYODIDE_DIR / "package.json").read_text(encoding="utf-8")).get("version")
+    except (OSError, ValueError):
+        return None
+
 def download_pyodide():
     """下載 Pyodide 發行包並解壓至 pyodide/ 目錄。"""
-    if PYODIDE_DIR.exists() and (PYODIDE_DIR / "pyodide.js").exists():
-        log("pyodide/ 目錄已存在，跳過下載。（如需重新下載，請先刪除 pyodide/ 目錄）")
-        return
+    if PYODIDE_DIR.exists():
+        current = installed_pyodide_version()
+        if current == PYODIDE_VERSION:
+            log(f"pyodide/ 已是 {PYODIDE_VERSION}，跳過下載。（如需重新下載，請先刪除 pyodide/ 目錄）")
+            return
+        # 版本不符（或讀不到版本）時不能沿用：舊 runtime 可能帶著已知漏洞的內建套件。
+        backup = ROOT_DIR / f"pyodide.old-{current or 'unknown'}"
+        if backup.exists():
+            print(f"錯誤：pyodide/ 是 {current or '未知版本'}，需要 {PYODIDE_VERSION}，"
+                  f"但備份目錄 {backup.name} 已存在，請先處理後再執行。")
+            sys.exit(1)
+        PYODIDE_DIR.rename(backup)
+        log(f"pyodide/ 是 {current or '未知版本'}，需要 {PYODIDE_VERSION}；舊版已移至 {backup.name}/")
+        log("提醒：部署中的站台需重建 nginx 容器，並調升 sw.js 的 CACHE_VERSION，瀏覽器才會換掉舊 runtime。")
 
     tarball_name = f"pyodide-{PYODIDE_VERSION}.tar.bz2"
     tarball_path = SCRIPTS_DIR / tarball_name

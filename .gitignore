@@ -1,5 +1,6 @@
 # Pyodide runtime（由建置腳本下載，不提交至 git）
 pyodide/
+pyodide.old-*/
 
 # Python wheels（由建置腳本下載，不提交至 git）
 wheels/
