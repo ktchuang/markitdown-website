@@ -81,7 +81,7 @@ docker compose -f docker-compose-dev.yml up
     ├── main.js              UI 邏輯、拖放事件、狀態管理、URL 抓取
     └── converter.worker.js  Web Worker（背景執行緒）
             │
-            ├── Pyodide 0.26.4（Python WASM）
+            ├── Pyodide 314.0.7（Python 3.14 WASM）
             ├── markitdown（純 Python wheel）
             └── 依賴套件：pdfminer.six、python-docx、openpyxl、python-pptx…
 

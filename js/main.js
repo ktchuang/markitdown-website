@@ -60,7 +60,7 @@ let currentIndex = -1;  // 目前正在轉換的索引
 let currentFetchController = null; // URL 抓取的 AbortController
 
 function createWorker() {
-  worker = new Worker('/js/converter.worker.js');
+  worker = new Worker('/js/converter.worker.js', { type: 'module' });
 
   worker.onmessage = (event) => {
     const { type, message, markdown, percent } = event.data;

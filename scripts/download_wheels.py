@@ -27,7 +27,7 @@ from pathlib import Path
 # ── 設定 ────────────────────────────────────────────────────────────────────
 
 # Pyodide 版本（如需更新，請至 https://github.com/pyodide/pyodide/releases 確認最新版本）
-PYODIDE_VERSION = "0.26.4"
+PYODIDE_VERSION = "314.0.7"
 
 # 根目錄（此腳本的上一層）
 ROOT_DIR = Path(__file__).parent.parent.resolve()
