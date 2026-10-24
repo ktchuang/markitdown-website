@@ -42,6 +42,14 @@ EXTRA_PACKAGES = [
     "ebooklib",
 ]
 
+# 傳遞依賴的安全下限：pip download 會解析到 PyPI 當下的最新版，這裡的下限
+# 確保重建時不會拿到已知有漏洞的舊版（pip-audit 2026-10-24）。
+SECURITY_FLOORS = [
+    "urllib3>=2.8.0",           # PYSEC-2026-4175 / 4176 / 4177
+    "soupsieve>=2.9.0,<3",      # PYSEC-2026-4170 / 4171；3.x 為大版本，未驗證
+    "certifi>=2026.10.19",      # PYSEC-2026-4320（emSign ECC G3 移除）
+]
+
 # ── 工具函式 ─────────────────────────────────────────────────────────────────
 
 def log(msg):
@@ -102,6 +110,7 @@ def download_extra_wheels():
         "--only-binary=:all:",
         "--quiet",
         *EXTRA_PACKAGES,
+        *SECURITY_FLOORS,
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
