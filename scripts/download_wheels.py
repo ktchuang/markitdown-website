@@ -88,11 +88,20 @@ def pyodide_version(path):
 def missing_pyodide_files(path):
     """回傳 path 內缺少的 runtime 檔案（空串列代表完整）。"""
     missing = [name for name in PYODIDE_REQUIRED if not (path / name).is_file()]
+    invalid = ["pyodide-lock.json（內容無效）"]
     try:
-        packages = json.loads((path / "pyodide-lock.json").read_text(encoding="utf-8"))["packages"]
-    except (OSError, ValueError, KeyError):
-        return missing
-    missing += [p["file_name"] for p in packages.values() if not (path / p["file_name"]).is_file()]
+        packages = json.loads((path / "pyodide-lock.json").read_text(encoding="utf-8")).get("packages")
+    except (OSError, ValueError, AttributeError):
+        return missing + invalid
+    # 正式的 lock 一定列有套件；空的或格式不對都視為損壞，不能當成完整。
+    if not isinstance(packages, dict) or not packages:
+        return missing + invalid
+    for entry in packages.values():
+        name = entry.get("file_name") if isinstance(entry, dict) else None
+        if not isinstance(name, str) or not name:
+            return missing + invalid
+        if not (path / name).is_file():
+            missing.append(name)
     return missing
 
 def download_pyodide():
@@ -106,7 +115,7 @@ def download_pyodide():
         # 版本不符、讀不到版本或檔案不全時都不能沿用：舊 runtime 可能帶著已知漏洞的內建套件，
         # 不完整的 runtime 則會在瀏覽器裡載入失敗。
         if missing:
-            reason, suffix = f"缺少 {len(missing)} 個檔案（例如 {missing[0]}）", f"{current}-incomplete"
+            reason, suffix = f"有 {len(missing)} 個檔案缺少或無效（例如 {missing[0]}）", f"{current}-incomplete"
         else:
             reason, suffix = f"是 {current or '未知版本'}，需要 {PYODIDE_VERSION}", current or "unknown"
         backup = ROOT_DIR / f"pyodide.old-{suffix}"
@@ -135,7 +144,7 @@ def download_pyodide():
     staged = extract_dir / "pyodide"
     missing = missing_pyodide_files(staged)
     if pyodide_version(staged) != PYODIDE_VERSION or missing:
-        print(f"錯誤：解壓出的 Pyodide 不是 {PYODIDE_VERSION} 或檔案不全（缺 {missing[:3]}），"
+        print(f"錯誤：解壓出的 Pyodide 不是 {PYODIDE_VERSION} 或檔案缺少或無效（{missing[:3]}），"
               f"請刪除 {tarball_path.name} 後重試。")
         sys.exit(1)
     staged.rename(PYODIDE_DIR)
