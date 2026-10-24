@@ -22,19 +22,19 @@
   <meta name="twitter:image" content="/images/og-image.png" />
 
   <!-- 靜態資源版本號：更新 CSS/JS/圖片時同步修改此處與 sw.js 的 UI_PRECACHE -->
-  <!-- APP_VERSION: 1.4.0 -->
-  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg?v=1.4.0" />
+  <!-- APP_VERSION: 1.5.0 -->
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg?v=1.5.0" />
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#2d2d2d" />
-  <link rel="apple-touch-icon" href="/images/icon-180.png?v=1.4.0" />
-  <link rel="stylesheet" href="/css/style.css?v=1.4.0" />
+  <link rel="apple-touch-icon" href="/images/icon-180.png?v=1.5.0" />
+  <link rel="stylesheet" href="/css/style.css?v=1.5.0" />
 </head>
 <body>
 
   <!-- 頁首 -->
   <header class="site-header">
     <div class="header-inner">
-      <img src="/images/favicon.svg?v=1.4.0" alt="WikiTA icon" class="site-icon" aria-hidden="true" width="48" height="48" />
+      <img src="/images/favicon.svg?v=1.5.0" alt="WikiTA icon" class="site-icon" aria-hidden="true" width="48" height="48" />
       <h1 class="site-title">WikiTA 知識匯入</h1>
       <p class="site-subtitle">把教材文件轉成 Markdown，供匯入 WikiTA 知識庫</p>
     </div>
@@ -186,7 +186,7 @@
   <!-- Service Worker：離線支援 -->
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js?v=1.4.0').catch(() => {
+      navigator.serviceWorker.register('/sw.js?v=1.5.0').catch(() => {
         // SW 註冊失敗不影響網站基本功能，靜默忽略
       });
 
@@ -198,7 +198,7 @@
       });
     }
   </script>
-  <script src="/js/lib/jszip.min.js?v=1.4.0"></script>
-  <script src="/js/main.js?v=1.4.0"></script>
+  <script src="/js/lib/jszip.min.js?v=1.5.0"></script>
+  <script src="/js/main.js?v=1.5.0"></script>
 </body>
 </html>

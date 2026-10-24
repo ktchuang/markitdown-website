@@ -10,7 +10,8 @@
  *   傳送 { type: 'error', message: string }         → 轉換失敗
  */
 
-importScripts('/pyodide/pyodide.js');
+// Pyodide 314 起只支援 module worker（main.js 以 { type: 'module' } 建立）。
+import { loadPyodide } from '/pyodide/pyodide.mjs';
 
 let pyodide = null;
 let isReady = false;
