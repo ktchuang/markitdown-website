@@ -173,6 +173,8 @@ markitdown-website/
 ```
 
 > `pyodide/` 和 `wheels/` 目錄由建置腳本產生，不納入版本控制。
+>
+> 建置腳本會比對 `pyodide/package.json` 的版本與 `PYODIDE_VERSION`，並檢查 runtime 檔案（含 `pyodide-lock.json` 列出的套件）是否齊全；版本不一致或檔案不全時，會把舊版移到 `pyodide.old-<版本>/` 再重新下載。下載後先解壓到 `.pyodide-extract/`，確認完整才移入 `pyodide/`。已部署的站台更新 Pyodide 後，需重建 nginx 容器並調升 `sw.js` 的 `CACHE_VERSION`。
 
 ## 反向代理（Docker + SSL）
 

@@ -1,5 +1,7 @@
 # Pyodide runtime 和 wheels 由 Dockerfile builder 階段下載，不需打包進 build context
 pyodide/
+pyodide.old-*/
+.pyodide-extract/
 wheels/
 
 # 版本控制

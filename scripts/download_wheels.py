@@ -74,11 +74,57 @@ def download_file(url, dest_path):
     urllib.request.urlretrieve(url, dest_path, reporthook)
     print()  # 換行
 
+# worker 載入時一定會用到的檔案；另外 pyodide-lock.json 列出的每個套件檔也必須存在。
+PYODIDE_REQUIRED = ["package.json", "pyodide.mjs", "pyodide.asm.mjs", "pyodide.asm.wasm",
+                    "pyodide-lock.json", "python_stdlib.zip"]
+
+def pyodide_version(path):
+    """回傳 path 內 runtime 的版本；讀不到時回傳 None。"""
+    try:
+        return json.loads((path / "package.json").read_text(encoding="utf-8")).get("version")
+    except (OSError, ValueError):
+        return None
+
+def missing_pyodide_files(path):
+    """回傳 path 內缺少的 runtime 檔案（空串列代表完整）。"""
+    missing = [name for name in PYODIDE_REQUIRED if not (path / name).is_file()]
+    invalid = ["pyodide-lock.json（內容無效）"]
+    try:
+        packages = json.loads((path / "pyodide-lock.json").read_text(encoding="utf-8")).get("packages")
+    except (OSError, ValueError, AttributeError):
+        return missing + invalid
+    # 正式的 lock 一定列有套件；空的或格式不對都視為損壞，不能當成完整。
+    if not isinstance(packages, dict) or not packages:
+        return missing + invalid
+    for entry in packages.values():
+        name = entry.get("file_name") if isinstance(entry, dict) else None
+        if not isinstance(name, str) or not name:
+            return missing + invalid
+        if not (path / name).is_file():
+            missing.append(name)
+    return missing
+
 def download_pyodide():
-    """下載 Pyodide 發行包並解壓至 pyodide/ 目錄。"""
-    if PYODIDE_DIR.exists() and (PYODIDE_DIR / "pyodide.js").exists():
-        log("pyodide/ 目錄已存在，跳過下載。（如需重新下載，請先刪除 pyodide/ 目錄）")
-        return
+    """下載 Pyodide 發行包，解壓並確認完整後放到 pyodide/ 目錄。"""
+    if PYODIDE_DIR.exists():
+        current = pyodide_version(PYODIDE_DIR)
+        missing = missing_pyodide_files(PYODIDE_DIR) if current == PYODIDE_VERSION else []
+        if current == PYODIDE_VERSION and not missing:
+            log(f"pyodide/ 已是 {PYODIDE_VERSION} 且檔案完整，跳過下載。（如需重新下載，請先刪除 pyodide/ 目錄）")
+            return
+        # 版本不符、讀不到版本或檔案不全時都不能沿用：舊 runtime 可能帶著已知漏洞的內建套件，
+        # 不完整的 runtime 則會在瀏覽器裡載入失敗。
+        if missing:
+            reason, suffix = f"有 {len(missing)} 個檔案缺少或無效（例如 {missing[0]}）", f"{current}-incomplete"
+        else:
+            reason, suffix = f"是 {current or '未知版本'}，需要 {PYODIDE_VERSION}", current or "unknown"
+        backup = ROOT_DIR / f"pyodide.old-{suffix}"
+        if backup.exists():
+            print(f"錯誤：pyodide/ {reason}，但備份目錄 {backup.name} 已存在，請先處理後再執行。")
+            sys.exit(1)
+        PYODIDE_DIR.rename(backup)
+        log(f"pyodide/ {reason}；舊版已移至 {backup.name}/")
+        log("提醒：部署中的站台需重建 nginx 容器，並調升 sw.js 的 CACHE_VERSION，瀏覽器才會換掉舊 runtime。")
 
     tarball_name = f"pyodide-{PYODIDE_VERSION}.tar.bz2"
     tarball_path = SCRIPTS_DIR / tarball_name
@@ -87,11 +133,22 @@ def download_pyodide():
     log(f"開始下載 Pyodide {PYODIDE_VERSION}（約 400MB，僅需下載一次）...")
     download_file(url, tarball_path)
 
+    # 先解壓到暫存目錄，確認完整後才移入 pyodide/，中斷時不會留下看似可用的半成品。
+    extract_dir = ROOT_DIR / ".pyodide-extract"
+    shutil.rmtree(extract_dir, ignore_errors=True)
     log("解壓縮中...")
     with tarfile.open(tarball_path, "r:bz2") as tar:
-        tar.extractall(ROOT_DIR)
+        tar.extractall(extract_dir)
 
     # Pyodide 解壓後目錄名為 "pyodide"，與我們的目標一致
+    staged = extract_dir / "pyodide"
+    missing = missing_pyodide_files(staged)
+    if pyodide_version(staged) != PYODIDE_VERSION or missing:
+        print(f"錯誤：解壓出的 Pyodide 不是 {PYODIDE_VERSION} 或檔案缺少或無效（{missing[:3]}），"
+              f"請刪除 {tarball_path.name} 後重試。")
+        sys.exit(1)
+    staged.rename(PYODIDE_DIR)
+    shutil.rmtree(extract_dir)
     tarball_path.unlink()
     log(f"Pyodide {PYODIDE_VERSION} 解壓完成 ✓")
 
