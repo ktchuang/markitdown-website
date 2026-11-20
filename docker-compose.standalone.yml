@@ -20,7 +20,9 @@ services:
     #   2026-07-13: 1.31.1 -> 1.31.2 (CVE-2026-42530 + CVE-2026-42055)
     #   2026-07-18: 1.31.2 -> 1.31.3 (CVE-2026-42533, 8.1 HIGH / CVSSv4 9.2)
     #   2026-10-19: 1.31.3 -> 1.31.7 (CVE-2026-15176 + CVE-2026-93479, 8.1 HIGH / CVSSv4 9.2)
-    image: nginx:1.31.7-alpine
+    #   2026-11-19: 1.31.7 -> 1.31.9 (CVE-2026-123007 / 123633 / 121810 / 123634 / 113425 / 118899, CVSSv4 9.2;
+    #               HTTP/2, HTTP/3, resolver+SSI/mirror, mail, TLS1.3 listen — none enabled here, upgraded anyway)
+    image: nginx:1.31.9-alpine
     container_name: wikita-markitdown
     restart: unless-stopped
     ports:
