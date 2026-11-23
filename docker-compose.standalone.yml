@@ -22,7 +22,16 @@ services:
     #   2026-10-19: 1.31.3 -> 1.31.7 (CVE-2026-15176 + CVE-2026-93479, 8.1 HIGH / CVSSv4 9.2)
     #   2026-11-19: 1.31.7 -> 1.31.9 (CVE-2026-123007 / 123633 / 121810 / 123634 / 113425 / 118899, CVSSv4 9.2;
     #               HTTP/2, HTTP/3, resolver+SSI/mirror, mail, TLS1.3 listen — none enabled here, upgraded anyway)
-    image: nginx:1.31.9-alpine
+    #   2026-11-23: same 1.31.9, plus a layer that upgrades libssl3 / libcrypto3
+    #               to the newest Alpine v3.24 build (3.5.9-r0 -> 3.5.9-r1). The official
+    #               image was built 2026-11-18 16:36 UTC, before aports shipped r1
+    #               (23:31 UTC). Drop the layer once the official image carries it.
+    #               Rebuild: docker compose build --pull, then up -d --force-recreate.
+    image: wikita-markitdown-nginx:1.31.9-alpine-ossl
+    build:
+      dockerfile_inline: |
+        FROM nginx:1.31.9-alpine
+        RUN apk upgrade --no-cache libssl3 libcrypto3
     container_name: wikita-markitdown
     restart: unless-stopped
     ports:
